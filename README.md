@@ -9,3 +9,5 @@ For using the sketch with a DSLR or another external camera, you can use [Sparko
 
 Pierre Puentes, aka [DRLZTN](https://www.facebook.com/derealizationn/), 2016
 
+(Currently working on a MaxMSP patch to connect other audio inputs to processing via OSC)
+
