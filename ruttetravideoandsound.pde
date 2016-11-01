@@ -6,8 +6,8 @@
 
 //Libraries
 import processing.video.*;
-Capture video;                      // Camere
-Movie movie;                        // Video File
+Capture video;                     
+Movie movie;                        
 
 import controlP5.*;
 ControlP5 cp5;
@@ -18,29 +18,40 @@ Spout spout;
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 Minim minim;
-AudioInput in;                    // Input
-AudioPlayer song;                 //Song
-BeatDetect beat;                  // beat detection objects
+AudioInput in;                    
+AudioPlayer song;                 
+BeatDetect beat;                  
 BeatListener bl;
 
-// Working with images (JPG, PNG, ect)
+// Image
 
 PImage img;
-String name = "pintura";           //file name 
-String type = "jpg";               //file type
+String name = "aster";          
+String type = "png";             
 int count = int(random(666));
 color col;
 int c;
 
-// Lines parameters
+// Parameters
 
-int space = 5;                     // space between lines
-float weight = 1;                  // line weight
-int zoom = 1;                      // zoom image
-float depthZ;                      // z depth
-float Depth = 1.0;                 // max value for the slider
+int musicMode=0;
+// 0 -> No Music
+// 1 -> Sound File
+// 2 -> Microphone
+int imageMode=2;
+// 0 -> Image File
+// 1 -> Video File
+// 2 -> Camera
 
-float kickSize;                    // variable for the size of the Kick
+int space = 5;                     // Space between lines
+float weight = 1;                  // Line weight
+int zoom = 1;                      // Zoom image
+int translatex = 0;                // translate the image if necesary
+int translatey = 0;
+float depthZ;                      // Depth
+float Depth = 1.0;                 // Max value for slider
+
+float kickSize;                    // Sound Kick variable
 
 PGraphics pgr;                     // Spout graphics 
 
@@ -71,20 +82,24 @@ class BeatListener implements AudioListener
 void setup() {
 
   size(640, 480, P3D);
-  pgr = createGraphics(1024, 768, P3D);
+  pgr = createGraphics(640, 480, P3D);
   smooth();
 
   // Working with external cámeras
-  String[] cameras = Capture.list();            // Shows avaliable cameras
+  String[] cameras = Capture.list();            
   for (int i = 0; i < cameras.length; i++) {
     println(cameras[i]);
   }
 
-  //img = loadImage(name + "." + type);         // If you want to work with images...
+  // Working with image file
+  img = loadImage(name + "." + type);         
 
-  video = new Capture(this, cameras[0]);        // Captures video from selected camera
+  // Working with Camera
+  video = new Capture(this, cameras[0]);        
   video.start();
-  movie = new Movie(this, "transit.mov");       // starts video file
+
+  // Working with video file
+  movie = new Movie(this, "transit.mov");
   movie.loop();
 
   // Depth control slider
@@ -103,11 +118,14 @@ void setup() {
 
   // Minim object and input
   minim = new Minim(this);
-  in = minim.getLineIn(1);                                        // If you want to work with the mic
-  song = minim.loadFile("Designer Drugs - Future Body.mp3", 2048);  // Loads the song from the data folder                                                // Play song if you hit P
-  song.play();
-  beat = new BeatDetect(song.bufferSize(), song.sampleRate());      // creates the beat detectionm
-  beat.setSensitivity(50);                                          // Beat detection sensivity
+  // Microphone
+  in = minim.getLineIn(1); 
+  // Sound File
+  song = minim.loadFile("Designer Drugs - Future Body.mp3", 2048);                                                 // Play song if you hit P
+
+  // Beat detection
+  beat = new BeatDetect(song.bufferSize(), song.sampleRate());      
+  beat.setSensitivity(50);                                          
 
   /* INFO FROM THE MINIM LIBRARIE EXAMPLE
    
@@ -125,8 +143,9 @@ void setup() {
    
    */
 
+  // Kick size and what analyses
   kickSize = 0.1;
-  bl = new BeatListener(beat, song);                                // This says what is going to analyse
+  bl = new BeatListener(beat, song);
 
   // Credits :v
   println("Christian Attard, 2015, introwerks");
@@ -139,30 +158,39 @@ void movieEvent(Movie m) {
 
 void draw() {
 
-  if (video.available()) {                                    // Use this if you want to work with cam
-  //if(movie.available()){                                   // Use this if you want to work with a video file                         
-    background(0);
+  background(0);
 
-    video.read();                                             // reads and updates camera pixels
-    video.loadPixels();
+  // Slider
+  gui();
 
-    movie.read();                                             // reads and updates video file pixels
-    movie.loadPixels();
+  // New size for the kick variable
+  if ( beat.isKick() ) kickSize = 0.7;                      
+  kickSize = constrain(kickSize * 0.95, 0.1, 0.7);
 
-    if ( beat.isKick() ) kickSize = 0.7;                      // Set the new size for the kick variable
-    kickSize = constrain(kickSize * 0.95, 0.1, 0.7);
+  // Changes depth depending on musicMode
+  switch(musicMode) {
+  case 0:
+    depthZ=Depth;
+    break;
+  case 1:
+    song.play();
+    depthZ=Depth+kickSize;
+    break;
+  case 2:
+    depthZ=Depth+in.right.get(1);
+    break;
+  }
 
-    //depthZ=Depth+in.right.get(1);                         // Using the mic
-    depthZ=Depth+kickSize;                                  // Using with a File
-    //depthZ=Depth;                                         // No music    
-
+  // Changes the image source depending on imageMode
+  switch(imageMode) {
+  case 0:
     pushMatrix();
-    translate(0, 0);
-    for (int i = 0; i < video.width; i+=space) {            // You can change video. to img. or movie.
+    translate(translatex, translatey);
+    for (int i = 0; i < img.width; i+=space) {            // You can change video. to img. or movie.
       beginShape();
-      for (int j = 0; j < video.height; j+=space) {
-        c = i+(j*video.width);
-        col = video.pixels[c];
+      for (int j = 0; j < img.height; j+=space) {
+        c = i+(j*img.width);
+        col = img.pixels[c];
         stroke(red(col), green(col), blue(col), 255);
         strokeWeight(weight);
         noFill();
@@ -171,9 +199,52 @@ void draw() {
       endShape();
     }
     popMatrix();
-    gui();                                                  // Draws the slider
+    break;
+  case 1:
+    if (movie.available()) {
+      movie.read();                                             // reads and updates video file pixels
+      movie.loadPixels();
+      pushMatrix();
+      translate(translatex, translatey);
+      for (int i = 0; i < movie.width; i+=space) {            // You can change video. to img. or movie.
+        beginShape();
+        for (int j = 0; j < movie.height; j+=space) {
+          c = i+(j*movie.width);
+          col = movie.pixels[c];
+          stroke(red(col), green(col), blue(col), 255);
+          strokeWeight(weight);
+          noFill();
+          vertex (i, j, (depthZ * brightness(col))-zoom);
+        }
+        endShape();
+      }
+      popMatrix();
+    }
+    break;
+  case 2:
+    if (video.available()) {
+      video.read();                                             // reads and updates video file pixels
+      video.loadPixels();
+      pushMatrix();
+      translate(translatex, translatey);
+      for (int i = 0; i < video.width; i+=space) {            // You can change video. to img. or movie.
+        beginShape();
+        for (int j = 0; j < video.height; j+=space) {
+          c = i+(j*video.width);
+          col = video.pixels[c];
+          stroke(red(col), green(col), blue(col), 255);
+          strokeWeight(weight);
+          noFill();
+          vertex (i, j, (depthZ * brightness(col))-zoom);
+        }
+        endShape();
+      }
+      popMatrix();
+    }
+    break;
   }
-  spout.sendTexture();                                      // Sends image via Spout
+  // Sends spout graphics
+  spout.sendTexture();
 }
 
 // Slider function for working with 3D
