@@ -6,7 +6,8 @@
 
 //Libraries
 import processing.video.*;
-Capture video;
+Capture video;                      // Camere
+Movie movie;                        // Video File
 
 import controlP5.*;
 ControlP5 cp5;
@@ -82,7 +83,9 @@ void setup() {
   //img = loadImage(name + "." + type);         // If you want to work with images...
 
   video = new Capture(this, cameras[0]);        // Captures video from selected camera
-  video.start();  
+  video.start();
+  movie = new Movie(this, "transit.mov");       // starts video file
+  movie.loop();
 
   // Depth control slider
   cp5 = new ControlP5(this);
@@ -130,16 +133,24 @@ void setup() {
   println("Pierre Puentes, 2016, DRLZTN");
 }
 
+void movieEvent(Movie m) {
+  m.read();
+}
+
 void draw() {
 
-  if (video.available()) {
+  if (video.available()) {                                    // Use this if you want to work with cam
+  //if(movie.available()){                                   // Use this if you want to work with a video file                         
     background(0);
 
-    video.read();
+    video.read();                                             // reads and updates camera pixels
     video.loadPixels();
 
-    if ( beat.isKick() ) kickSize = 1;                      // Set the new size for the kick variable
-    kickSize = constrain(kickSize * 0.95, 0.1, 1);
+    movie.read();                                             // reads and updates video file pixels
+    movie.loadPixels();
+
+    if ( beat.isKick() ) kickSize = 0.7;                      // Set the new size for the kick variable
+    kickSize = constrain(kickSize * 0.95, 0.1, 0.7);
 
     //depthZ=Depth+in.right.get(1);                         // Using the mic
     depthZ=Depth+kickSize;                                  // Using with a File
@@ -147,7 +158,7 @@ void draw() {
 
     pushMatrix();
     translate(0, 0);
-    for (int i = 0; i < video.width; i+=space) {            // If you want to work with image, change video. to img.
+    for (int i = 0; i < video.width; i+=space) {            // You can change video. to img. or movie.
       beginShape();
       for (int j = 0; j < video.height; j+=space) {
         c = i+(j*video.width);
