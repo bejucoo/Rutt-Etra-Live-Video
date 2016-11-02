@@ -34,11 +34,11 @@ int c;
 
 // Parameters
 
-int musicMode=0;
+int musicMode=2;
 // 0 -> No Music
 // 1 -> Sound File
 // 2 -> Microphone
-int imageMode=2;
+int imageMode=1;
 // 0 -> Image File
 // 1 -> Video File
 // 2 -> Camera
@@ -95,8 +95,10 @@ void setup() {
   img = loadImage(name + "." + type);         
 
   // Working with Camera
-  video = new Capture(this, cameras[0]);        
-  video.start();
+  video = new Capture(this, cameras[0]);
+  if (imageMode==2) {
+    video.start();
+  }
 
   // Working with video file
   movie = new Movie(this, "transit.mov");
