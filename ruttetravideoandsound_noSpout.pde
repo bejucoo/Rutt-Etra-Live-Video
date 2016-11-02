@@ -12,6 +12,9 @@ Movie movie;
 import controlP5.*;
 ControlP5 cp5;
 
+import spout.*;
+Spout spout;
+
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 Minim minim;
@@ -76,7 +79,7 @@ class BeatListener implements AudioListener
 
 void setup() {
 
-  size(1280, 720, P3D);
+  size(640, 480, P3D);
   smooth();
 
   // Working with external cámeras
@@ -89,8 +92,10 @@ void setup() {
   img = loadImage(name + "." + type);         
 
   // Working with Camera
-  video = new Capture(this, cameras[0]);        
-  video.start();
+  video = new Capture(this, cameras[0]);
+  if (imageMode==2) {
+    video.start();
+  }
 
   // Working with video file
   movie = new Movie(this, "transit.mov");
@@ -115,11 +120,11 @@ void setup() {
 
   // Beat detection
   beat = new BeatDetect(song.bufferSize(), song.sampleRate());      
-  beat.setSensitivity(100);                                          
+  beat.setSensitivity(50);                                          
 
   /* INFO FROM THE MINIM LIBRARIE EXAMPLE
    
-   Set the sensitivity to 100 milliseconds
+   Set the sensitivity to 50 milliseconds
    After a beat has been detected, the algorithm will wait for 50 milliseconds 
    before allowing another beat to be reported. You can use this to dampen the 
    algorithm if it is giving too many false-positives. The default value is 10, 
