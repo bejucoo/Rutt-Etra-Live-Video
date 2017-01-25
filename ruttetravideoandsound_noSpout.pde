@@ -12,9 +12,6 @@ Movie movie;
 import controlP5.*;
 ControlP5 cp5;
 
-import spout.*;
-Spout spout;
-
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 Minim minim;
